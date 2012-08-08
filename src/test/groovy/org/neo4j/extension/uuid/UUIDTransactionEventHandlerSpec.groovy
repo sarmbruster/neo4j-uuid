@@ -9,6 +9,7 @@ class UUIDTransactionEventHandlerSpec extends Specification {
     def "check if a new node has a uuid"() {
         setup:
         GraphDatabaseService graphDB =  new ImpermanentGraphDatabase()
+        graphDB.registerTransactionEventHandler(new UUIDTransactionEventHandler())
 
         when:
         def tx = graphDB.beginTx()
