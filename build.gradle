@@ -7,8 +7,10 @@ repositories {
 }
   
 dependencies {
-  groovy "org.codehaus.groovy:groovy-all:1.8.6"
-  testCompile "org.spockframework:spock-core:0.6-groovy-1.8" 
+    groovy "org.codehaus.groovy:groovy-all:1.8.6"
+    testCompile "org.spockframework:spock-core:0.6-groovy-1.8"
+    testCompile group: 'org.neo4j', name: 'neo4j-kernel', version: '1.8.M06', classifier: 'tests'
+    testCompile group: 'org.neo4j', name: 'neo4j-kernel', version: '1.8.M06'
 }
 
 task wrapper(type: Wrapper) {
