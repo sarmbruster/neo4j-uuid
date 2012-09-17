@@ -13,6 +13,7 @@ import org.neo4j.graphdb.TransactionFailureException
 
 class UUIDTransactionEventHandlerSpec extends Specification {
 
+    static UUID_REGEX = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/
     @Shared GraphDatabaseService graphDB
     @Shared NeoServer server
     Transaction tx
@@ -26,11 +27,6 @@ class UUIDTransactionEventHandlerSpec extends Specification {
     def cleanupSpec() {
         server.stop()
     }
-
-    /*def setup() {
-        tx = graphDB.beginTx()
-
-    } */
 
     def "check ServiceLoader works for PluginLifecycle"() {
         when:
@@ -47,7 +43,7 @@ class UUIDTransactionEventHandlerSpec extends Specification {
         def uuid = node.getProperty('uuid', null)
 
         then:
-        uuid =~ /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/
+        uuid =~ UUID_REGEX
     }
 
     def "check if a new relationship has a uuid"() {
@@ -62,7 +58,7 @@ class UUIDTransactionEventHandlerSpec extends Specification {
         def uuid = rel.getProperty('uuid', null)
 
         then:
-        uuid =~ /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/
+        uuid =~ UUID_REGEX
     }
 
 
@@ -118,7 +114,6 @@ class UUIDTransactionEventHandlerSpec extends Specification {
 
     }
 
-
     def withTransaction(Closure closure) {
         def tx = graphDB.beginTx()
         try {
@@ -130,15 +125,4 @@ class UUIDTransactionEventHandlerSpec extends Specification {
         }
     }
 
-    Node createNode() {
-        withTransaction {graphDB.createNode()}
-        /*def tx = graphDB.beginTx()
-        try {
-            def node = graphDB.createNode()
-            tx.success()
-            node
-        } finally {
-            tx.finish()
-        } */
-    }
 }
