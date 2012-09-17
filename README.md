@@ -7,5 +7,14 @@ A best practice for having unique identifiers is to assign each node/relationshi
 ## license ##
 tbd
 
+## build & install ##
+neo4j-uuid uses [Gradle](http://www.gradle.org) as build system. To install uuid-neo4j in a Neo4j server instance:
+* call `./gradlew assemble`
+* copy `./build/libs/neo4j-uuid.jar` to your Neo4j server's `plugins` directory
+* amend `$NEO4J_SERVER/conf/neo4j-server.properties` with the following line:
+
+    org.neo4j.server.thirdparty_jaxrs_classes=org.neo4j.extension.uuid=/db/uuid
+
+
 ### implementation details ###
-tbd
+* for testing [Spock](http://www.spockframework.org) is used
