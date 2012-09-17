@@ -9,7 +9,7 @@ import org.neo4j.server.helpers.ServerBuilder
 /**
  * abstract base class for spock tests using a NeoServer
  */
-class NeoServerSpecification extends Specification {
+abstract class NeoServerSpecification extends Specification {
 
     public static final String MOUNTPOINT = "/db/uuid"
     @Shared GraphDatabaseService graphDB
