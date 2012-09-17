@@ -1,5 +1,8 @@
 package org.neo4j.extension.uuid;
 
+import com.fasterxml.uuid.Generators;
+import com.fasterxml.uuid.UUIDGenerator;
+import com.fasterxml.uuid.impl.TimeBasedGenerator;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.event.PropertyEntry;
 import org.neo4j.graphdb.event.TransactionData;
@@ -17,6 +20,8 @@ import java.util.UUID;
 public class UUIDTransactionEventHandler implements TransactionEventHandler {
 
     public static final String UUID_PROPERTY_NAME = "uuid";
+
+    private final TimeBasedGenerator uuidGenerator = Generators.timeBasedGenerator();
 
     @Override
     public Object beforeCommit(TransactionData data) throws Exception {
@@ -46,7 +51,12 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
     private void populateUuidsFor(Iterable<? extends PropertyContainer> propertyContainers) {
         for (PropertyContainer propertyContainer : propertyContainers) {
             if (!propertyContainer.hasProperty(UUID_PROPERTY_NAME)) {
-                propertyContainer.setProperty(UUID_PROPERTY_NAME, UUID.randomUUID().toString());
+
+                final UUID uuid = uuidGenerator.generate();
+                final StringBuilder sb = new StringBuilder();
+                sb.append(Long.toHexString(uuid.getMostSignificantBits())).append(Long.toHexString(uuid.getLeastSignificantBits()));
+
+                propertyContainer.setProperty(UUID_PROPERTY_NAME, sb.toString());
             }
         }
     }

@@ -13,7 +13,7 @@ import org.neo4j.graphdb.TransactionFailureException
 
 class UUIDTransactionEventHandlerSpec extends Specification {
 
-    static UUID_REGEX = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/
+    static UUID_REGEX = /^[a-f0-9]{32}$/
     @Shared GraphDatabaseService graphDB
     @Shared NeoServer server
     Transaction tx
