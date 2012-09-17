@@ -1,3 +1,2 @@
-org.neo4j.extension.uuid.UUIDTransactionEventHandler
-
+org.neo4j.extension.uuid.UUIDPluginLifecycle
 
