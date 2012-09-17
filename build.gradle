@@ -9,6 +9,7 @@ repositories {
 
 ext {
     neo4jVersion = "1.8.RC1"
+    jerseyVersion = "1.9"
 }
   
 dependencies {
@@ -21,7 +22,8 @@ dependencies {
     testCompile group: 'org.neo4j', name: 'neo4j-kernel', version: neo4jVersion, classifier: 'tests'
     testCompile group: 'org.neo4j.app', name: 'neo4j-server', version: neo4jVersion, classifier: 'tests'
     testCompile group: 'org.neo4j.app', name: 'neo4j-server', version: neo4jVersion
-    testCompile group: 'com.sun.jersey', name: 'jersey-core', version: "1.9"
+    testCompile group: 'com.sun.jersey', name: 'jersey-core', version: jerseyVersion
+    testCompile group: 'com.sun.jersey', name: 'jersey-client', version: jerseyVersion
 }
 
 task wrapper(type: Wrapper) {

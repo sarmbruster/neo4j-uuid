@@ -1,32 +1,12 @@
 package org.neo4j.extension.uuid
 
-import org.neo4j.graphdb.GraphDatabaseService
-import org.neo4j.graphdb.Transaction
-import org.neo4j.graphdb.Node
-import spock.lang.Shared
-import spock.lang.Specification
-import org.neo4j.server.helpers.ServerBuilder
-import org.neo4j.server.NeoServer
-import org.neo4j.server.plugins.PluginLifecycle
 import org.neo4j.graphdb.DynamicRelationshipType
 import org.neo4j.graphdb.TransactionFailureException
+import org.neo4j.server.plugins.PluginLifecycle
 
-class UUIDTransactionEventHandlerSpec extends Specification {
+class UUIDTransactionEventHandlerSpec extends NeoServerSpecification {
 
     static UUID_REGEX = /^[a-f0-9]{32}$/
-    @Shared GraphDatabaseService graphDB
-    @Shared NeoServer server
-    Transaction tx
-
-    def setupSpec() {
-        server = ServerBuilder.server().withThirdPartyJaxRsPackage("org.neo4j.extension.uuid", "/uuid").build();
-        server.start()
-        graphDB = server.database.graph
-    }
-
-    def cleanupSpec() {
-        server.stop()
-    }
 
     def "check ServiceLoader works for PluginLifecycle"() {
         when:
@@ -112,17 +92,6 @@ class UUIDTransactionEventHandlerSpec extends Specification {
         e = thrown(TransactionFailureException)
         e.cause.cause.message =~ /you are not allowed to remove uuid properties/
 
-    }
-
-    def withTransaction(Closure closure) {
-        def tx = graphDB.beginTx()
-        try {
-            def result = closure.call()
-            tx.success()
-            return result
-        } finally {
-            tx.finish()
-        }
     }
 
 }
