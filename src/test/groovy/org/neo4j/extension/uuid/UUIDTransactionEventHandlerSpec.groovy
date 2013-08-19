@@ -2,15 +2,17 @@ package org.neo4j.extension.uuid
 
 import org.neo4j.graphdb.DynamicRelationshipType
 import org.neo4j.graphdb.TransactionFailureException
+import org.neo4j.kernel.extension.KernelExtensionFactory
 import org.neo4j.server.plugins.PluginLifecycle
 
-class UUIDTransactionEventHandlerSpec extends NeoServerSpecification {
+class UUIDTransactionEventHandlerSpec extends NeoSpecification {
 
     static UUID_REGEX = /^[a-f0-9]{32}$/
 
-    def "check ServiceLoader works for PluginLifecycle"() {
+    def "check ServiceLoader works for KernelExtensionFactory"() {
         when:
-        def services = ServiceLoader.load(PluginLifecycle)
+        def services = ServiceLoader.load(KernelExtensionFactory)
+
         then:
         services.iterator().size() > 0
     }
@@ -47,7 +49,8 @@ class UUIDTransactionEventHandlerSpec extends NeoServerSpecification {
         def node = withTransaction { graphDB.createNode() }
 
         when:
-        def hits = graphDB.index().nodeAutoIndexer.autoIndex.get('uuid', node.getProperty('uuid'))
+        def nai = graphDB.index().nodeAutoIndexer
+        def hits = nai.autoIndex.get('uuid', node.getProperty('uuid'))
 
         then:
         hits.size()==1

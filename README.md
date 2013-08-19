@@ -5,7 +5,7 @@ A lot of [Neo4j](http://www.neo4j.org) based projects I've seen need a unique id
 A best practice for having unique identifiers is to assign each node/relationship a uuid property and let Neo4j perform autoindexing on the uuid property. Third party systems store only the UUID. A simple index lookup retrieves then the referenced node or relationship in the graph database.
 
 ## license ##
-tbd
+GPL v3
 
 ## build & install ##
 neo4j-uuid uses [Gradle](http://www.gradle.org) as build system. To install uuid-neo4j in a Neo4j server instance:
@@ -18,3 +18,5 @@ neo4j-uuid uses [Gradle](http://www.gradle.org) as build system. To install uuid
 
 ### implementation details ###
 * for testing [Spock](http://www.spockframework.org) is used
+* Neo4j scans using JDK ServiceLoader for registered implementations of KernelExtensionFactory. We register UUIDKernelExtensionFactory that passes back an instance of UUIDLifeCycle. UUIDLifeCycle takes care of setting up auto indexing for `uuid` properties and registers a `UUIDTransactionEventHandler`
+* a second component provides a unmanaged extension for querying nodes/rels by uuid, see `UUIDRestInterface`
