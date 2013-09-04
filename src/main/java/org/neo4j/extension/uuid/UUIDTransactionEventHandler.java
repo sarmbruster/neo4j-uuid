@@ -1,9 +1,10 @@
 package org.neo4j.extension.uuid;
 
 import com.fasterxml.uuid.Generators;
-import com.fasterxml.uuid.UUIDGenerator;
 import com.fasterxml.uuid.impl.TimeBasedGenerator;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.event.PropertyEntry;
 import org.neo4j.graphdb.event.TransactionData;
 import org.neo4j.graphdb.event.TransactionEventHandler;
@@ -24,15 +25,15 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
     private final TimeBasedGenerator uuidGenerator = Generators.timeBasedGenerator();
 
     @Override
-    public Object beforeCommit(TransactionData data) throws Exception {
+    public Object beforeCommit(TransactionData transactionData) throws Exception {
 
-        checkForUuidChanges(data.removedNodeProperties(), "remove");
-        checkForUuidChanges(data.assignedNodeProperties(), "assign");
-        checkForUuidChanges(data.removedRelationshipProperties(), "remove");
-        checkForUuidChanges(data.assignedRelationshipProperties(), "assign");
+        checkForUuidChanges(transactionData.removedNodeProperties(), transactionData, "remove");
+        checkForUuidChanges(transactionData.assignedNodeProperties(), transactionData, "assign");
+        checkForUuidChanges(transactionData.removedRelationshipProperties(), transactionData, "remove");
+        checkForUuidChanges(transactionData.assignedRelationshipProperties(), transactionData, "assign");
 
-        populateUuidsFor(data.createdNodes());
-        populateUuidsFor(data.createdRelationships());
+        populateUuidsFor(transactionData.createdNodes());
+        populateUuidsFor(transactionData.createdRelationships());
 
         return null;
     }
@@ -61,11 +62,20 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
         }
     }
 
-    private void checkForUuidChanges(Iterable<? extends PropertyEntry<? extends PropertyContainer>> changeList, String action) {
+    private void checkForUuidChanges(Iterable<? extends PropertyEntry<? extends PropertyContainer>> changeList, TransactionData transactionData, String action) {
         for (PropertyEntry<? extends PropertyContainer> removedProperty : changeList) {
-            if (removedProperty.key().equals(UUID_PROPERTY_NAME)) {
+            if (removedProperty.key().equals(UUID_PROPERTY_NAME) && ( !isPropertyContainerDeleted(transactionData, removedProperty))) {
                 throw new IllegalStateException("you are not allowed to " + action + " " + UUID_PROPERTY_NAME + " properties");
             }
+        }
+    }
+
+    private boolean isPropertyContainerDeleted(TransactionData transactionData, PropertyEntry<? extends PropertyContainer> propertyEntry) {
+        PropertyContainer entity = propertyEntry.entity();
+        if (entity instanceof Node) {
+            return transactionData.isDeleted((Node)entity);
+        } else {
+            return transactionData.isDeleted((Relationship)entity);
         }
     }
 

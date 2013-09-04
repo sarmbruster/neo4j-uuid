@@ -1,6 +1,7 @@
 package org.neo4j.extension.uuid
 
 import org.neo4j.graphdb.DynamicRelationshipType
+import org.neo4j.graphdb.NotFoundException
 import org.neo4j.graphdb.TransactionFailureException
 import org.neo4j.kernel.extension.KernelExtensionFactory
 import org.neo4j.server.plugins.PluginLifecycle
@@ -53,7 +54,7 @@ class UUIDTransactionEventHandlerSpec extends NeoSpecification {
         def hits = nai.autoIndex.get('uuid', node.getProperty('uuid'))
 
         then:
-        hits.size()==1
+        hits.size() == 1
         hits.single == node
     }
 
@@ -62,34 +63,34 @@ class UUIDTransactionEventHandlerSpec extends NeoSpecification {
         def startNode
         def rel
         withTransaction {
-                    startNode = graphDB.createNode()
-                    def endNode = graphDB.createNode()
-                    rel = startNode.createRelationshipTo(endNode, DynamicRelationshipType.withName('RELATED'))
-                }
+            startNode = graphDB.createNode()
+            def endNode = graphDB.createNode()
+            rel = startNode.createRelationshipTo(endNode, DynamicRelationshipType.withName('RELATED'))
+        }
 
         when: "trying to change uuid on node"
-        withTransaction { startNode.setProperty("uuid", "123")}
+        withTransaction { startNode.setProperty("uuid", "123") }
 
         then:
         def e = thrown(TransactionFailureException)
         e.cause.cause.message =~ /you are not allowed to assign uuid properties/
 
         when: "trying to remove uuid on node"
-        withTransaction { startNode.removeProperty("uuid")}
+        withTransaction { startNode.removeProperty("uuid") }
 
         then:
         e = thrown(TransactionFailureException)
         e.cause.cause.message =~ /you are not allowed to remove uuid properties/
 
         when: "trying to change uuid on relationship"
-        withTransaction { rel.setProperty("uuid", "123")}
+        withTransaction { rel.setProperty("uuid", "123") }
 
         then:
         e = thrown(TransactionFailureException)
         e.cause.cause.message =~ /you are not allowed to assign uuid properties/
 
         when: "trying to remove uuid on relationship"
-        withTransaction { rel.removeProperty("uuid")}
+        withTransaction { rel.removeProperty("uuid") }
 
         then:
         e = thrown(TransactionFailureException)
@@ -97,4 +98,33 @@ class UUIDTransactionEventHandlerSpec extends NeoSpecification {
 
     }
 
+    def "check if nodes can be deleted"() {
+        setup:
+        def node = withTransaction { graphDB.createNode() }
+        def nodeId = node.id
+
+        when:
+        withTransaction { node.delete() }
+        withTransaction { graphDB.getNodeById(nodeId) }
+
+        then:
+        thrown(NotFoundException)
+    }
+
+    def "check if relationships can be deleted"() {
+        setup:
+        def relationship = withTransaction {
+            def node1 = graphDB.createNode()
+            def node2 = graphDB.createNode()
+            node1.createRelationshipTo(node2, DynamicRelationshipType.withName("CONNECTS"))
+        }
+        def relationshipId = relationship.id
+
+        when:
+        withTransaction { relationship.delete() }
+        withTransaction { graphDB.getRelationshipById(relationshipId) }
+
+        then:
+        thrown(NotFoundException)
+    }
 }
