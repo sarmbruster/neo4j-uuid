@@ -127,4 +127,19 @@ class UUIDTransactionEventHandlerSpec extends NeoSpecification {
         then:
         thrown(NotFoundException)
     }
+
+    def "check if overriding uuid with same value works"() {
+        setup:
+        def node = withTransaction { graphDB.createNode() }
+
+        when:
+        withTransaction {
+            node.setProperty("uuid", node.getProperty("uuid"))
+            node.setProperty("dummy", "123")
+        }
+
+        then: "no exception has been thrown"
+        node.getProperty("uuid") != null
+        node.getProperty("dummy")== "123"
+    }
 }

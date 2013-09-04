@@ -39,10 +39,10 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
     @Override
     public Object beforeCommit(TransactionData transactionData) throws Exception {
 
-        checkForUuidChanges(transactionData.removedNodeProperties(), transactionData, "remove");
-        checkForUuidChanges(transactionData.assignedNodeProperties(), transactionData, "assign");
-        checkForUuidChanges(transactionData.removedRelationshipProperties(), transactionData, "remove");
-        checkForUuidChanges(transactionData.assignedRelationshipProperties(), transactionData, "assign");
+        checkForUuidDeletion(transactionData.removedNodeProperties(), transactionData);
+        checkForUuidAssignment(transactionData.assignedNodeProperties());
+        checkForUuidDeletion(transactionData.removedRelationshipProperties(), transactionData);
+        checkForUuidAssignment(transactionData.assignedRelationshipProperties());
 
         initIndexes();
         populateUuidsFor(transactionData.createdNodes(), nodeUuidIndex);
@@ -89,10 +89,20 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
         }
     }
 
-    private void checkForUuidChanges(Iterable<? extends PropertyEntry<? extends PropertyContainer>> changeList, TransactionData transactionData, String action) {
-        for (PropertyEntry<? extends PropertyContainer> removedProperty : changeList) {
-            if (removedProperty.key().equals(UUID_PROPERTY_NAME) && ( !isPropertyContainerDeleted(transactionData, removedProperty))) {
-                throw new IllegalStateException("you are not allowed to " + action + " " + UUID_PROPERTY_NAME + " properties");
+    private void checkForUuidAssignment(Iterable<? extends PropertyEntry<? extends PropertyContainer>> changeList) {
+        for (PropertyEntry<? extends PropertyContainer> changendPropertyEntry : changeList) {
+            if (changendPropertyEntry.key().equals(UUID_PROPERTY_NAME)
+                    && ( !changendPropertyEntry.previouslyCommitedValue().equals(changendPropertyEntry.value()))) {
+                throw new IllegalStateException("you are not allowed to assign " + UUID_PROPERTY_NAME + " properties");
+            }
+        }
+    }
+
+    private void checkForUuidDeletion(Iterable<? extends PropertyEntry<? extends PropertyContainer>> changeList, TransactionData transactionData) {
+        for (PropertyEntry<? extends PropertyContainer> changendPropertyEntry : changeList) {
+            if (changendPropertyEntry.key().equals(UUID_PROPERTY_NAME)
+                    && ( !isPropertyContainerDeleted(transactionData, changendPropertyEntry))) {
+                throw new IllegalStateException("you are not allowed to remove " + UUID_PROPERTY_NAME + " properties");
             }
         }
     }
