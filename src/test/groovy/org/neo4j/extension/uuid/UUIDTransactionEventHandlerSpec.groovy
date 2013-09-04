@@ -45,13 +45,13 @@ class UUIDTransactionEventHandlerSpec extends NeoSpecification {
     }
 
 
-    def "verify autoindexing on uuids"() {
+    def "verify indexing on uuids"() {
         setup:
         def node = withTransaction { graphDB.createNode() }
 
         when:
-        def nai = graphDB.index().nodeAutoIndexer
-        def hits = nai.autoIndex.get('uuid', node.getProperty('uuid'))
+        def index = graphDB.index().forNodes(UUIDTransactionEventHandler.UUID_INDEX_NAME)
+        def hits = index.get('uuid', node.getProperty('uuid'))
 
         then:
         hits.size() == 1

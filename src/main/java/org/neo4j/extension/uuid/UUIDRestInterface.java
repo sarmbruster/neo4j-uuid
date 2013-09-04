@@ -22,14 +22,14 @@ public class UUIDRestInterface {
     @Path("/node/{uuid}")
     @Produces(MediaType.APPLICATION_JSON)
     public String findNodeByUUID(@PathParam("uuid") String uuid) {
-        IndexHits<Node> hits = graphDatabaseService.index().getNodeAutoIndexer().getAutoIndex().get(UUIDTransactionEventHandler.UUID_PROPERTY_NAME, uuid);
+        IndexHits<Node> hits = graphDatabaseService.index().forNodes(UUIDTransactionEventHandler.UUID_INDEX_NAME).get(UUIDTransactionEventHandler.UUID_PROPERTY_NAME, uuid);
         return Long.toString(hits.getSingle().getId());
     }
 
     @GET
     @Path("/relationship/{uuid}")
     public String findRelationshipByUUID(@PathParam("uuid") String uuid) {
-        IndexHits<Relationship> hits = graphDatabaseService.index().getRelationshipAutoIndexer().getAutoIndex().get(UUIDTransactionEventHandler.UUID_PROPERTY_NAME, uuid);
+        IndexHits<Relationship> hits = graphDatabaseService.index().forRelationships(UUIDTransactionEventHandler.UUID_INDEX_NAME).get(UUIDTransactionEventHandler.UUID_PROPERTY_NAME, uuid);
         return Long.toString(hits.getSingle().getId());
     }
 

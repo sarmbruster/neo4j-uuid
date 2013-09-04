@@ -2,12 +2,16 @@ package org.neo4j.extension.uuid;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.TimeBasedGenerator;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.event.PropertyEntry;
 import org.neo4j.graphdb.event.TransactionData;
 import org.neo4j.graphdb.event.TransactionEventHandler;
+import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexManager;
+import org.neo4j.graphdb.index.RelationshipIndex;
 
 import java.util.UUID;
 
@@ -21,8 +25,16 @@ import java.util.UUID;
 public class UUIDTransactionEventHandler implements TransactionEventHandler {
 
     public static final String UUID_PROPERTY_NAME = "uuid";
+    public static final String UUID_INDEX_NAME = "uuid";
 
     private final TimeBasedGenerator uuidGenerator = Generators.timeBasedGenerator();
+    private final GraphDatabaseService graphDatabaseService;
+    private Index<Node> nodeUuidIndex;
+    private RelationshipIndex relationshipUuidIndex;
+
+    public UUIDTransactionEventHandler(GraphDatabaseService graphDatabaseService) {
+        this.graphDatabaseService = graphDatabaseService;
+    }
 
     @Override
     public Object beforeCommit(TransactionData transactionData) throws Exception {
@@ -32,10 +44,22 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
         checkForUuidChanges(transactionData.removedRelationshipProperties(), transactionData, "remove");
         checkForUuidChanges(transactionData.assignedRelationshipProperties(), transactionData, "assign");
 
-        populateUuidsFor(transactionData.createdNodes());
-        populateUuidsFor(transactionData.createdRelationships());
+        initIndexes();
+        populateUuidsFor(transactionData.createdNodes(), nodeUuidIndex);
+        populateUuidsFor(transactionData.createdRelationships(), relationshipUuidIndex);
 
         return null;
+    }
+
+    private void initIndexes() {
+        if (nodeUuidIndex == null) {
+            IndexManager indexManager = graphDatabaseService.index();
+            nodeUuidIndex = indexManager.forNodes(UUID_INDEX_NAME);
+        }
+        if (relationshipUuidIndex==null) {
+            IndexManager indexManager = graphDatabaseService.index();
+            relationshipUuidIndex = indexManager.forRelationships(UUID_INDEX_NAME);
+        }
     }
 
     @Override
@@ -48,16 +72,19 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
 
     /**
      * @param propertyContainers set UUID property for a iterable on nodes or relationships
+     * @param index index to be used
      */
-    private void populateUuidsFor(Iterable<? extends PropertyContainer> propertyContainers) {
+    private void populateUuidsFor(Iterable<? extends PropertyContainer> propertyContainers, Index index) {
         for (PropertyContainer propertyContainer : propertyContainers) {
             if (!propertyContainer.hasProperty(UUID_PROPERTY_NAME)) {
 
                 final UUID uuid = uuidGenerator.generate();
                 final StringBuilder sb = new StringBuilder();
                 sb.append(Long.toHexString(uuid.getMostSignificantBits())).append(Long.toHexString(uuid.getLeastSignificantBits()));
+                String uuidAsString = sb.toString();
 
-                propertyContainer.setProperty(UUID_PROPERTY_NAME, sb.toString());
+                propertyContainer.setProperty(UUID_PROPERTY_NAME, uuidAsString);
+                index.add(propertyContainer, UUID_PROPERTY_NAME, uuidAsString);
             }
         }
     }
