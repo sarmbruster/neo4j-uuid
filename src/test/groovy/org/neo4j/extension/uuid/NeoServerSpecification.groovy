@@ -16,7 +16,7 @@ abstract class NeoServerSpecification extends Specification {
     @Shared NeoServer server
 
     def setupSpec() {
-        server = ServerBuilder.server().withThirdPartyJaxRsPackage("org.neo4j.extension.uuid", MOUNTPOINT).build();
+        server = ServerBuilder.server().onPort(37474).withThirdPartyJaxRsPackage("org.neo4j.extension.uuid", MOUNTPOINT).build();
         server.start()
         graphDB = server.database.graph
     }
