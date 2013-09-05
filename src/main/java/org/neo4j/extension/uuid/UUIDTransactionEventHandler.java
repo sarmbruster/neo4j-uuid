@@ -91,7 +91,7 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
 
     private void checkForUuidAssignment(Iterable<? extends PropertyEntry<? extends PropertyContainer>> changeList) {
         for (PropertyEntry<? extends PropertyContainer> changendPropertyEntry : changeList) {
-            if (changendPropertyEntry.key().equals(UUID_PROPERTY_NAME)
+            if (UUID_PROPERTY_NAME.equals(changendPropertyEntry.key())
                     && ( !changendPropertyEntry.previouslyCommitedValue().equals(changendPropertyEntry.value()))) {
                 throw new IllegalStateException("you are not allowed to assign " + UUID_PROPERTY_NAME + " properties");
             }
@@ -100,7 +100,7 @@ public class UUIDTransactionEventHandler implements TransactionEventHandler {
 
     private void checkForUuidDeletion(Iterable<? extends PropertyEntry<? extends PropertyContainer>> changeList, TransactionData transactionData) {
         for (PropertyEntry<? extends PropertyContainer> changendPropertyEntry : changeList) {
-            if (changendPropertyEntry.key().equals(UUID_PROPERTY_NAME)
+            if (UUID_PROPERTY_NAME.equals(changendPropertyEntry.key())
                     && ( !isPropertyContainerDeleted(transactionData, changendPropertyEntry))) {
                 throw new IllegalStateException("you are not allowed to remove " + UUID_PROPERTY_NAME + " properties");
             }
