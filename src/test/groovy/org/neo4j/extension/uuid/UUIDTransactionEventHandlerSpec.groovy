@@ -1,5 +1,7 @@
 package org.neo4j.extension.uuid
 
+import org.neo4j.cypher.MissingIndexException
+import org.neo4j.cypher.javacompat.ExecutionEngine
 import org.neo4j.graphdb.DynamicRelationshipType
 import org.neo4j.graphdb.NotFoundException
 import org.neo4j.graphdb.TransactionFailureException
@@ -141,5 +143,16 @@ class UUIDTransactionEventHandlerSpec extends NeoSpecification {
         then: "no exception has been thrown"
         node.getProperty("uuid") != null
         node.getProperty("dummy")== "123"
+    }
+
+    def "check if index is initialized on startup"() {
+        setup:
+        def executionEngine = new ExecutionEngine(graphDB)
+
+        when:
+        executionEngine.execute("start n=node:uuid(uuid='123') return n")
+
+        then:
+        notThrown MissingIndexException
     }
 }
