@@ -1,6 +1,7 @@
 apply plugin: "java"
 apply plugin: "groovy"
 apply plugin: 'idea'
+apply plugin: 'maven-publish'
 
 //sourceCompatibility=JavaVersion.VERSION_1_7
 //targetCompatibility=JavaVersion.VERSION_1_7
@@ -14,9 +15,12 @@ ext {
     neo4jVersion = "1.9.2"
     jerseyVersion = "1.9"
 }
+
+version = "1.0.0-SNAPSHOT"
+group="org.neo4j.extension.uuid"
   
 dependencies {
-    compile group: "org.codehaus.groovy", name: "groovy-all", version: "2.1.6"
+    testCompile group: "org.codehaus.groovy", name: "groovy-all", version: "2.1.6"
     compile group: 'org.neo4j', name: 'neo4j-kernel', version: neo4jVersion
     compile group: 'org.neo4j', name: 'neo4j-lucene-index', version: neo4jVersion
     compile group: 'org.neo4j', name: 'server-api', version: neo4jVersion
@@ -31,4 +35,18 @@ dependencies {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.7'
+}
+
+ publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+//            url "file://$buildDir/repo" // change to point to your repo, e.g. http://my.org/repo
+            url 'file:///home/stefan/lib/neo4j/m2/snapshots'  // TODO: externalize this
+        }
+    }
 }
