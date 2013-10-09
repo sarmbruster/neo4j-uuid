@@ -11,6 +11,7 @@ GPL v3
 neo4j-uuid uses [Gradle](http://www.gradle.org) as build system. To install uuid-neo4j in a Neo4j server instance:
 * call `./gradlew assemble`
 * copy `./build/libs/neo4j-uuid.jar` to your Neo4j server's `plugins` directory
+* copy the latest version of http://mvnrepository.com/artifact/com.fasterxml.uuid/java-uuid-generator to Neo4j's `plugins` directory as well (will automate that step in future).
 * amend `$NEO4J_SERVER/conf/neo4j-server.properties` with the following line:
 
     org.neo4j.server.thirdparty_jaxrs_classes=org.neo4j.extension.uuid=/db/uuid
